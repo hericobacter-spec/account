@@ -53,7 +53,6 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    const sql = getDb();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
