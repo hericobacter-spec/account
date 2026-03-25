@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import tesseract from 'tesseract.js';
+import { createWorker } from 'tesseract.js';
 
 export async function POST(request) {
   try {
@@ -10,14 +10,19 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Run Tesseract OCR
-    const { data: { text } } = await tesseract.recognize(buffer, 'kor+eng', {
+    // Vercel Serverless is completely read-only except /tmp.
+    // Tesseract tries to download and save language models to the root directory by default, causing EACCES crashes.
+    // We enforce a memory-only cache or point it to /tmp to bypass the crash.
+    const worker = await createWorker('kor+eng', 1, {
+      cachePath: '/tmp',
       logger: m => console.log(m)
     });
+
+    const { data: { text } } = await worker.recognize(buffer);
+    await worker.terminate();
 
     console.log("Extracted OCR Text:", text);
 
