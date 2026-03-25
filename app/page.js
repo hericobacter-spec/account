@@ -34,7 +34,7 @@ export default function Dashboard() {
         members.forEach(m => {
           let memberUnpaid = false;
           m.dues.forEach(d => {
-            if (d.is_paid === 1) {
+            if (d.is_paid) {
               totalDuesPaid += d.amount;
             } else {
               memberUnpaid = true;
