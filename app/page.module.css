@@ -74,12 +74,6 @@
   color: var(--text-secondary);
 }
 
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .cardTrend {
   display: flex;
   align-items: center;
