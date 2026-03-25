@@ -122,12 +122,14 @@
   background: var(--surface-color);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 500px;
 }
 
 .table th, .table td {
@@ -161,6 +163,7 @@
   border-radius: 9999px;
   font-weight: 500;
   font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 .vendorInfo {
@@ -177,4 +180,12 @@
 .amountCol {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .formRow {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
