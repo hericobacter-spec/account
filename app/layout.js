@@ -6,6 +6,13 @@ export const metadata = {
   description: 'Minimalist dashboard to manage group expenses and members.',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
