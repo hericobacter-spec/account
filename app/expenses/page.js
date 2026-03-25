@@ -25,9 +25,16 @@ export default function ExpensesPage() {
     try {
       const res = await fetch('/api/expenses');
       const data = await res.json();
-      setExpenses(data);
+      if (Array.isArray(data)) {
+        setExpenses(data);
+      } else {
+        console.error('API returns non-array:', data);
+        alert('데이터를 불러올 수 없습니다: /api/setup 페이지에 먼저 접속해 DB가 생성됐는지 확인해주세요. (' + (data.error || '알 수 없는 구조') + ')');
+        setExpenses([]);
+      }
     } catch (err) {
       console.error(err);
+      setExpenses([]);
     } finally {
       setLoading(false);
     }

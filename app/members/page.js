@@ -20,9 +20,16 @@ export default function MembersPage() {
     try {
       const res = await fetch('/api/members');
       const data = await res.json();
-      setMembers(data);
+      if (Array.isArray(data)) {
+        setMembers(data);
+      } else {
+        console.error('API returns non-array:', data);
+        alert('데이터를 불러올 수 없습니다: Vercel 배포 시 /api/setup 페이지에 먼저 접속해 DB 형성을 완료했는지 확인해주세요. (' + (data.error || '알 수 없는 구조') + ')');
+        setMembers([]);
+      }
     } catch (err) {
       console.error(err);
+      setMembers([]);
     } finally {
       setLoading(false);
     }

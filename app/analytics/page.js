@@ -16,9 +16,15 @@ export default function AnalyticsPage() {
       try {
         const res = await fetch('/api/expenses');
         const data = await res.json();
-        setExpenses(data);
+        if (Array.isArray(data)) {
+          setExpenses(data);
+        } else {
+          console.error('API returns non-array:', data);
+          setExpenses([]);
+        }
       } catch (err) {
         console.error(err);
+        setExpenses([]);
       } finally {
         setLoading(false);
       }
@@ -36,9 +42,10 @@ export default function AnalyticsPage() {
     purposeMap[e.purpose] = (purposeMap[e.purpose] || 0) + e.amount;
     
     // Group by month-year for date chart (e.g. "2023-10")
-    // Simple for now, just literal date if dates are few. Let's use first 7 chars (YYYY-MM)
-    const month = e.date.substring(0, 7);
-    dateMap[month] = (dateMap[month] || 0) + e.amount;
+    if (e.expense_date) {
+      const month = e.expense_date.substring(0, 7);
+      dateMap[month] = (dateMap[month] || 0) + e.amount;
+    }
   });
 
   const purposeData = Object.keys(purposeMap)
