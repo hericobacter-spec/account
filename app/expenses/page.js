@@ -138,11 +138,19 @@ export default function ExpensesPage() {
     if (!formData.date || !formData.purpose || !formData.amount) return;
 
     try {
-      await fetch('/api/expenses', {
+      const res = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, amount: Number(formData.amount) })
       });
+      
+      const resData = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(resData.error || '서버 저장 중 오류가 발생했습니다.');
+      }
+      
+      console.log('Expense saved:', resData);
       
       setFormData({
         date: new Date().toISOString().split('T')[0],
@@ -153,9 +161,16 @@ export default function ExpensesPage() {
         receipt_image: null
       });
       setShowForm(false);
-      fetchExpenses();
+      
+      // Wait a moment for consistency in case of async replication
+      setTimeout(() => {
+        fetchExpenses();
+      }, 500);
+      
+      alert('성공적으로 저장되었습니다.');
     } catch (err) {
-      console.error(err);
+      console.error('Submit handle error:', err);
+      alert('저장 실패: ' + err.message);
     }
   };
 
