@@ -52,3 +52,9 @@
   flex: 1;
   min-height: 300px;
 }
+
+@media (max-width: 768px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+}
