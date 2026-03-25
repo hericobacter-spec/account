@@ -366,7 +366,6 @@
 .viewReceiptBtn {
   font-size: 0.75rem;
   padding: 0.35rem 0.65rem;
-  margin-top: 0.4rem;
   border: 1px solid var(--accent-primary);
   background: var(--accent-light);
   color: var(--accent-primary);
@@ -379,6 +378,7 @@
   font-weight: 600;
   width: fit-content;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  white-space: nowrap;
 }
 
 .viewReceiptBtn:hover {
@@ -396,6 +396,11 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.centerCol {
+  text-align: center !important;
+  width: 100px;
 }
 
 @media (max-width: 1024px) {

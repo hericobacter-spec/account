@@ -327,6 +327,7 @@ export default function ExpensesPage() {
                   <th>날짜</th>
                   <th>목적</th>
                   <th>사용처 / 내역</th>
+                  <th className={styles.centerCol}>영수증</th>
                   <th className={styles.amountCol}>금액</th>
                   <th></th>
                 </tr>
@@ -342,15 +343,17 @@ export default function ExpensesPage() {
                       <div className={styles.vendorInfo}>
                         <strong>{expense.vendor || '미지정'}</strong>
                         {expense.items && <span className={styles.expenseItems}>{expense.items}</span>}
-                        {expense.receipt_image && (
-                          <button 
-                            className={styles.viewReceiptBtn}
-                            onClick={() => setShowModal(expense.receipt_image)}
-                          >
-                            <ImageIcon size={14} /> 영수증 보기
-                          </button>
-                        )}
                       </div>
+                    </td>
+                    <td className={styles.centerCol}>
+                      {expense.receipt_image && (
+                        <button 
+                          className={styles.viewReceiptBtn}
+                          onClick={() => setShowModal(expense.receipt_image)}
+                        >
+                          <ImageIcon size={14} /> 보기
+                        </button>
+                      )}
                     </td>
                     <td className={styles.amountCol}>
                       <strong>{expense.amount.toLocaleString()}원</strong>
