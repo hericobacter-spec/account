@@ -107,6 +107,24 @@
   color: var(--danger);
 }
 
+.deleteMemberBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.deleteMemberBtn:hover {
+  color: var(--danger);
+  background-color: var(--danger-light);
+}
+
 .duesSummary {
   display: flex;
   flex-direction: column;

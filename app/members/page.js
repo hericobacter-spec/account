@@ -108,6 +108,26 @@ export default function MembersPage() {
     }
   };
 
+  const handleDeleteMember = async (id, name) => {
+    if (!window.confirm(`정말로 '${name}' 님을 삭제하시겠습니까?\n선택하신 멤버의 모든 청구 및 납입 내역도 영구적으로 삭제됩니다.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/members?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || '삭제 라우트 오류');
+      }
+      fetchMembers();
+    } catch (err) {
+      console.error(err);
+      alert('멤버 삭제 중 오류가 발생했습니다: ' + err.message);
+    }
+  };
+
   if (loading) return <div className="fade-in">데이터를 불러오는 중입니다...</div>;
 
   return (
@@ -163,8 +183,17 @@ export default function MembersPage() {
             <div key={member.id} className={`card ${styles.memberCard}`}>
               <div className={styles.memberHeader}>
                 <h4>{member.name}</h4>
-                <div className={styles.statusBadge} data-unpaid={member.unpaidCount > 0}>
-                  {member.unpaidCount > 0 ? `${member.unpaidCount}건 미납` : '완납'}
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <div className={styles.statusBadge} data-unpaid={member.unpaidCount > 0}>
+                    {member.unpaidCount > 0 ? `${member.unpaidCount}건 미납` : '완납'}
+                  </div>
+                  <button 
+                    onClick={() => handleDeleteMember(member.id, member.name)}
+                    className={styles.deleteMemberBtn}
+                    title="멤버 삭제"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
               
