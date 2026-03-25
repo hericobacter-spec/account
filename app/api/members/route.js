@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@vercel/postgres';
+import { getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const { rows: members } = await sql`SELECT * FROM members ORDER BY created_at DESC`;
+    const sql = getDb();
+    const members = await sql`SELECT * FROM members ORDER BY created_at DESC`;
     
     const membersWithDues = await Promise.all(members.map(async (member) => {
-      const { rows: dues } = await sql`SELECT * FROM dues WHERE member_id = ${member.id}`;
+      const dues = await sql`SELECT * FROM dues WHERE member_id = ${member.id}`;
       
       const totalAmount = dues.reduce((sum, d) => sum + d.amount, 0);
       const paidAmount = dues.reduce((sum, d) => d.is_paid ? sum + d.amount : sum, 0);
@@ -31,10 +32,11 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    const sql = getDb();
     const { name, dueAmount, isPaid } = await request.json();
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
 
-    const { rows } = await sql`INSERT INTO members (name) VALUES (${name}) RETURNING id`;
+    const rows = await sql`INSERT INTO members (name) VALUES (${name}) RETURNING id`;
     const memberId = rows[0].id;
 
     if (dueAmount) {
