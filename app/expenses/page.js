@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
-import { Camera, Plus, FileText, Upload, RefreshCw, XCircle } from 'lucide-react';
+import { Camera, Plus, FileText, Upload, RefreshCw, XCircle, X, Image as ImageIcon } from 'lucide-react';
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState([]);
@@ -14,12 +14,15 @@ export default function ExpensesPage() {
     purpose: '',
     vendor: '',
     items: '',
-    amount: ''
+    amount: '',
+    receipt_image: null
   });
 
   const [ocrLoading, setOcrLoading] = useState(false);
-  const fileInputRef = useRef(null);
+  const ocrInputRef = useRef(null);
+  const basicInputRef = useRef(null);
   const [showForm, setShowForm] = useState(false);
+  const [showModal, setShowModal] = useState(null);
 
   const fetchExpenses = async () => {
     try {
@@ -49,11 +52,42 @@ export default function ExpensesPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const MAX_WIDTH = 800; // Good enough for receipt reading but small enough for text columns
+          let width = img.width;
+          let height = img.height;
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.6));
+        };
+      };
+    });
+  };
+
   const handleOcrUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setOcrLoading(true);
+    
+    // Save image locally right away using client-side compression
+    const base64 = await compressImage(file);
+    setFormData(prev => ({ ...prev, receipt_image: base64 }));
+
     const formDataPayload = new FormData();
     formDataPayload.append('image', file);
 
@@ -72,19 +106,31 @@ export default function ExpensesPage() {
         setFormData(prev => ({
           ...prev,
           amount: data.amount ? String(data.amount) : prev.amount,
-          vendor: data.vendor ? data.vendor : prev.vendor
+          vendor: data.vendor ? data.vendor : prev.vendor,
+          receipt_image: base64
         }));
         alert('영수증 인식이 완료되었습니다. 금액과 사용처를 확인해주세요.');
       } else {
-        alert('영수증에서 금액이나 사용처를 인식하지 못했습니다. 수동으로 입력해주세요.');
+        alert('영수증에서 금액이나 사용처를 인식하지 못했습니다. 수동으로 직접 입력해주세요.');
       }
     } catch (err) {
       console.error(err);
       alert('OCR 처리 중 오류가 발생했습니다: ' + err.message);
     } finally {
       setOcrLoading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (ocrInputRef.current) ocrInputRef.current.value = '';
     }
+  };
+
+  const handleBasicUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Save image locally without OCR processing
+    const base64 = await compressImage(file);
+    setFormData(prev => ({ ...prev, receipt_image: base64 }));
+    
+    if (basicInputRef.current) basicInputRef.current.value = '';
   };
 
   const handleSubmit = async (e) => {
@@ -103,7 +149,8 @@ export default function ExpensesPage() {
         purpose: '',
         vendor: '',
         items: '',
-        amount: ''
+        amount: '',
+        receipt_image: null
       });
       setShowForm(false);
       fetchExpenses();
@@ -133,26 +180,60 @@ export default function ExpensesPage() {
         <div className={`glass-card fade-in ${styles.formContainer}`}>
           <div className={styles.ocrSection}>
             <div className={styles.ocrLabel}>
-              <Camera size={20} className={styles.ocrIcon}/> 
-              <span>영수증 자동 인식 (OCR)</span>
+              <ImageIcon size={20} className={styles.ocrIcon}/> 
+              <span>증빙 자료 첨부 방식 선택</span>
             </div>
-            <p className={styles.ocrDesc}>영수증 이미지를 업로드하면 금액과 사용처가 자동으로 입력됩니다.</p>
+            
             <input 
               type="file" 
               accept="image/*" 
-              ref={fileInputRef} 
+              ref={ocrInputRef} 
               onChange={handleOcrUpload} 
               style={{ display: 'none' }}
             />
-            <button 
-              type="button" 
-              className={`btn btn-secondary ${styles.ocrBtn}`}
-              onClick={() => fileInputRef.current?.click()}
-              disabled={ocrLoading}
-            >
-              {ocrLoading ? <RefreshCw size={18} className={styles.spin} /> : <Upload size={18} />}
-              {ocrLoading ? '분석 중...' : '영수증 이미지 업로드'}
-            </button>
+            <input 
+              type="file" 
+              accept="image/*" 
+              ref={basicInputRef} 
+              onChange={handleBasicUpload} 
+              style={{ display: 'none' }}
+            />
+
+            {!formData.receipt_image ? (
+              <div className={styles.uploadOptions}>
+                <div 
+                  className={`${styles.uploadCard} ${ocrLoading ? styles.disabled : ''}`} 
+                  onClick={() => !ocrLoading && ocrInputRef.current?.click()}
+                >
+                  <div className={styles.uploadIcon}>
+                    {ocrLoading ? <RefreshCw size={24} className={styles.spin} /> : <Camera size={24} />}
+                  </div>
+                  <strong>영수증 자동 인식 (OCR)</strong>
+                  <p>{ocrLoading ? '이미지를 분석하는 중입니다...' : '사진을 분석하여 금액과 상호명을 자동 입력합니다.'}</p>
+                </div>
+
+                <div 
+                  className={`${styles.uploadCard} ${ocrLoading ? styles.disabled : ''}`} 
+                  onClick={() => !ocrLoading && basicInputRef.current?.click()}
+                >
+                  <div className={`${styles.uploadIcon} ${styles.basic}`}>
+                    <Upload size={24} />
+                  </div>
+                  <strong>일반 영수증 첨부</strong>
+                  <p>자동 분석을 생략하고 영수증 사진만 단순 증빙 자료로 첨부합니다.</p>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.previewContainer}>
+                <div style={{marginBottom: '0.75rem', fontSize:'0.875rem', color: 'var(--success)', fontWeight: '600'}}>
+                  ✓ 첨부가 완료되었습니다. (하단에 상세 내역을 입력하세요)
+                </div>
+                <img src={formData.receipt_image} alt="Receipt Preview" className={styles.previewImage} />
+                <button type="button" className={styles.removeImageBtn} onClick={() => setFormData(prev => ({...prev, receipt_image: null}))}>
+                  <X size={14} />
+                </button>
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className={styles.expenseForm}>
@@ -226,6 +307,14 @@ export default function ExpensesPage() {
                       <div className={styles.vendorInfo}>
                         <strong>{expense.vendor || '미지정'}</strong>
                         {expense.items && <span className={styles.expenseItems}>{expense.items}</span>}
+                        {expense.receipt_image && (
+                          <button 
+                            className={styles.viewReceiptBtn}
+                            onClick={() => setShowModal(expense.receipt_image)}
+                          >
+                            <ImageIcon size={14} /> 영수증 보기
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td className={styles.amountCol}>
@@ -238,6 +327,17 @@ export default function ExpensesPage() {
           </div>
         )}
       </div>
+
+      {showModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowModal(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeModalBtn} onClick={() => setShowModal(null)}>
+              <X size={20} />
+            </button>
+            <img src={showModal} alt="Receipt Full" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

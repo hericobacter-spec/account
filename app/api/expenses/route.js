@@ -20,14 +20,15 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { amount, purpose, vendor, expense_date } = await request.json();
+    const sql = getDb(); // Using the renamed imported function
+    const { amount, purpose, vendor, expense_date, receipt_image } = await request.json();
     if (!amount || !purpose || !expense_date) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const { rows } = await sql`
-      INSERT INTO expenses (amount, purpose, vendor, expense_date)
-      VALUES (${amount}, ${purpose}, ${vendor || ''}, ${expense_date})
+      INSERT INTO expenses (amount, purpose, vendor, expense_date, receipt_image)
+      VALUES (${amount}, ${purpose}, ${vendor || ''}, ${expense_date}, ${receipt_image || null})
       RETURNING id
     `;
 

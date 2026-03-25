@@ -92,6 +92,163 @@
   color: var(--text-secondary);
 }
 
+.uploadOptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.uploadCard {
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 0.5rem;
+}
+
+.uploadCard:hover {
+  border-color: var(--accent-primary);
+  background: var(--accent-light);
+  transform: translateY(-2px);
+}
+
+.uploadCard.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.uploadIcon {
+  background: var(--accent-primary);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadIcon.basic {
+  background: var(--text-secondary);
+}
+
+.uploadCard strong {
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.uploadCard p {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .uploadOptions {
+    grid-template-columns: 1fr;
+  }
+}
+
+.previewContainer {
+  margin-top: 1rem;
+  position: relative;
+  width: fit-content;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.previewImage {
+  display: block;
+  max-width: 150px;
+  height: auto;
+}
+
+.removeImageBtn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removeImageBtn:hover {
+  background: var(--danger);
+}
+
+.viewReceiptBtn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  color: var(--text-color);
+}
+
+.viewReceiptBtn:hover {
+  background: var(--border-color);
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modalContent {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.modalContent img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+}
+
+.closeModalBtn {
+  position: absolute;
+  top: -1rem;
+  right: -1rem;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 50%;
+  padding: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
 .formActions {
   display: flex;
   justify-content: flex-end;
