@@ -96,6 +96,8 @@
 :global(.app-container) {
   display: flex;
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 :global(.main-content) {
@@ -160,5 +162,25 @@
   }
   .active:hover {
     background-color: transparent;
+  }
+
+  :global(.app-container) {
+    flex-direction: column;
+  }
+
+  :global(.main-content) {
+    margin-left: 0;
+    margin-bottom: 65px;
+    padding: 1.25rem 1rem;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+  }
+  
+  :global(.main-content > div) {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
   }
 }
