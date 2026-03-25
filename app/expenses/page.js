@@ -174,6 +174,25 @@ export default function ExpensesPage() {
     }
   };
 
+  const handleDeleteExpense = async (id) => {
+    if (!confirm('이 지출 내역을 정말로 삭제하시겠습니까?')) return;
+
+    try {
+      const res = await fetch(`/api/expenses?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        fetchExpenses();
+      } else {
+        const errorData = await res.json();
+        alert('삭제 실패: ' + (errorData.error || '알 수 없는 오류'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('삭제 도중 통신 오류가 발생했습니다.');
+    }
+  };
+
   if (loading) return <div className="fade-in">데이터를 불러오는 중입니다...</div>;
 
   return (
@@ -309,6 +328,7 @@ export default function ExpensesPage() {
                   <th>목적</th>
                   <th>사용처 / 내역</th>
                   <th className={styles.amountCol}>금액</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -335,6 +355,17 @@ export default function ExpensesPage() {
                     <td className={styles.amountCol}>
                       <strong>{expense.amount.toLocaleString()}원</strong>
                     </td>
+                    <td>
+                      <div className={styles.actionCell}>
+                        <button 
+                          className={styles.deleteBtn}
+                          onClick={() => handleDeleteExpense(expense.id)}
+                          title="삭제"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -345,10 +376,10 @@ export default function ExpensesPage() {
 
       {showModal && (
         <div className={styles.modalOverlay} onClick={() => setShowModal(null)}>
+          <button className={styles.closeModalBtn} onClick={() => setShowModal(null)}>
+            <X size={24} />
+          </button>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <button className={styles.closeModalBtn} onClick={() => setShowModal(null)}>
-              <X size={20} />
-            </button>
             <img src={showModal} alt="Receipt Full" />
           </div>
         </div>
