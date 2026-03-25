@@ -188,7 +188,7 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   :global(.main-content) {
     margin-left: 0 !important;
     margin-bottom: 80px;
