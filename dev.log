@@ -1,0 +1,16 @@
+
+> dev
+> next dev
+
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http://localhost:3015
+- Network:       http://192.168.0.168:3015
+✓ Ready in 233ms
+⨯ Another next dev server is already running.
+
+- Local:        http://local POST /api/members 201 in 261ms (next.js: 248ms, application-code: 12ms)
+ᆷ통장
+- Log:          .next/dev/logs/next-development.log
+
+Run kill 39176 to stop it.
+[?25h

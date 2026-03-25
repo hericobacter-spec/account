@@ -48,8 +48,14 @@ export default function MembersPage() {
       });
       
       if (!res.ok) {
-        const errData = await res.json();
-        alert('멤버 추가 실패: ' + (errData.error || '알 수 없는 오류'));
+        let errMessage = '알 수 없는 오류';
+        try {
+          const errData = await res.json();
+          errMessage = errData.error || errMessage;
+        } catch(parseErr) {
+          errMessage = `서버가 정상적인 JSON을 반환하지 않았습니다 (Status: ${res.status}). 배포 환경(Vercel 등)에서 SQLite 호환성 문제일 수 있습니다.`;
+        }
+        alert('멤버 추가 실패: ' + errMessage);
         return;
       }
       
@@ -59,7 +65,7 @@ export default function MembersPage() {
       fetchMembers();
     } catch (err) {
       console.error(err);
-      alert('네트워크 오류가 발생했습니다.');
+      alert('네트워크 통신 중 에러가 발생했습니다: ' + err.message);
     }
   };
 
