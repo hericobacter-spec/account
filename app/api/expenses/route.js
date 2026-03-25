@@ -5,39 +5,60 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const { rows: expenses } = await sql`
+    const result = await sql`
       SELECT * FROM expenses ORDER BY expense_date DESC, created_at DESC
     `;
-    const formatted = expenses.map(e => ({
-      ...e,
-      date: new Date(e.expense_date).toISOString().split('T')[0],
-      expense_date: new Date(e.expense_date).toISOString().split('T')[0]
-    }));
+    const expenses = result.rows || [];
+    
+    console.log(`Fetched ${expenses.length} expenses from DB`);
+
+    const formatted = expenses.map(e => {
+      // Robust date formatting to prevent 500 errors
+      let dateStr = '';
+      try {
+        dateStr = new Date(e.expense_date).toISOString().split('T')[0];
+      } catch (err) {
+        console.error('Date parsing error for expense:', e.id, e.expense_date);
+        dateStr = String(e.expense_date);
+      }
+
+      return {
+        ...e,
+        date: dateStr,
+        expense_date: dateStr
+      };
+    });
     return NextResponse.json(formatted);
   } catch (error) {
+    console.error('GET Expenses Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function POST(request) {
   try {
-    const { amount, purpose, vendor, items, date, expense_date, receipt_image } = await request.json();
+    const body = await request.json();
+    const { amount, purpose, vendor, items, date, expense_date, receipt_image } = body;
     
-    // Unified date handling: accept either 'date' (frontend) or 'expense_date' (API spec)
+    console.log('Inserting expense:', { amount, purpose, vendor, date: expense_date || date });
+
     const finalDate = expense_date || date;
     
     if (!amount || !purpose || !finalDate) {
-      return NextResponse.json({ error: 'Missing required fields: amount, purpose, or date' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const { rows } = await sql`
+    const result = await sql`
       INSERT INTO expenses (amount, purpose, vendor, items, expense_date, receipt_image)
-      VALUES (${amount}, ${purpose}, ${vendor || ''}, ${items || null}, ${finalDate}, ${receipt_image || null})
-      RETURNING id
+      VALUES (${Number(amount)}, ${purpose}, ${vendor || ''}, ${items || null}, ${finalDate}, ${receipt_image || null})
+      RETURNING id, amount, purpose
     `;
 
-    return NextResponse.json({ id: rows[0].id }, { status: 201 });
+    console.log('Insert result:', result.rows?.[0]);
+
+    return NextResponse.json({ id: result.rows[0].id }, { status: 201 });
   } catch (error) {
+    console.error('POST Expense Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
