@@ -64,6 +64,10 @@ export default function ExpensesPage() {
       });
       const data = await res.json();
       
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
       if (data.amount || data.vendor) {
         setFormData(prev => ({
           ...prev,
@@ -76,7 +80,7 @@ export default function ExpensesPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('OCR 처리 중 오류가 발생했습니다.');
+      alert('OCR 처리 중 오류가 발생했습니다: ' + err.message);
     } finally {
       setOcrLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
