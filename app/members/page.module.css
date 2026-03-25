@@ -73,11 +73,19 @@
 }
 
 .duesSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   font-size: 0.875rem;
   color: var(--text-secondary);
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 1rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
 }
 
 .duesList {

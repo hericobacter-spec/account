@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request) {
   try {
     const { member_id, amount, due_date } = await request.json();

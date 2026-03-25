@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import * as xlsx from 'xlsx';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET() {
   try {
     const expenses = db.prepare('SELECT date, purpose, vendor, amount FROM expenses ORDER BY date ASC').all();

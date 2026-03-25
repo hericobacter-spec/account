@@ -48,6 +48,26 @@
   gap: 0.25rem;
 }
 
+.financialSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.finRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.125rem;
+}
+
+.finDivider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.5rem 0;
+}
+
 .cardValue span {
   font-size: 1.25rem;
   font-weight: 500;

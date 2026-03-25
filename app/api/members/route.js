@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET() {
   try {
     const members = db.prepare('SELECT * FROM members ORDER BY created_at DESC').all();
@@ -9,8 +12,9 @@ export async function GET() {
     const membersWithDues = members.map(member => {
       const dues = db.prepare('SELECT * FROM dues WHERE member_id = ?').all(member.id);
       const totalAmount = dues.reduce((sum, d) => sum + d.amount, 0);
+      const paidAmount = dues.reduce((sum, d) => d.is_paid === 1 ? sum + d.amount : sum, 0);
       const unpaidCount = dues.filter(d => d.is_paid === 0).length;
-      return { ...member, dues, totalAmount, unpaidCount };
+      return { ...member, dues, totalAmount, paidAmount, unpaidCount };
     });
 
     return NextResponse.json(membersWithDues);

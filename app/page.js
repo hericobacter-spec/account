@@ -6,6 +6,7 @@ import { CreditCard, AlertCircle, Calendar, ArrowUpRight, ArrowDownRight } from 
 
 export default function Dashboard() {
   const [data, setData] = useState({
+    totalDuesPaid: 0,
     totalBalance: 0,
     totalExpenses: 0,
     unpaidCount: 0,
@@ -52,6 +53,7 @@ export default function Dashboard() {
         const totalBalance = totalDuesPaid - totalExpenses;
 
         setData({
+          totalDuesPaid,
           totalBalance,
           totalExpenses,
           unpaidCount,
@@ -83,15 +85,23 @@ export default function Dashboard() {
             <div className={styles.iconBox} style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-primary)' }}>
               <CreditCard size={24} />
             </div>
-            <h3>총 잔액</h3>
+            <h3>재무 요약</h3>
           </div>
-          <div className={styles.cardValue}>
-            {data.totalBalance.toLocaleString()}<span>원</span>
+          <div className={styles.financialSummary}>
+            <div className={styles.finRow}>
+              <span>총 입금액</span>
+              <strong>{data.totalDuesPaid.toLocaleString()}원</strong>
+            </div>
+            <div className={styles.finRow}>
+              <span>총 지출액</span>
+              <strong style={{color:'var(--danger)'}}>-{data.totalExpenses.toLocaleString()}원</strong>
+            </div>
+            <div className={styles.finDivider} />
+            <div className={styles.finRow}>
+              <span>현재 잔액</span>
+              <strong style={{color:'var(--accent-primary)', fontSize:'1.5rem'}}>{data.totalBalance.toLocaleString()}원</strong>
+            </div>
           </div>
-          <p className={styles.cardTrend}>
-            <ArrowUpRight size={16} color="var(--success)" />
-            총 지출: {data.totalExpenses.toLocaleString()}원
-          </p>
         </div>
 
         <div className="glass-card">

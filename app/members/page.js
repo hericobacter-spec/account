@@ -121,7 +121,18 @@ export default function MembersPage() {
               </div>
               
               <div className={styles.duesSummary}>
-                누적 회비: <strong>{member.totalAmount.toLocaleString()}원</strong>
+                <div className={styles.summaryRow}>
+                  <span>청구된 총액:</span>
+                  <strong>{member.totalAmount.toLocaleString()}원</strong>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>납입 완료:</span>
+                  <strong style={{ color: 'var(--success)' }}>{member.paidAmount.toLocaleString()}원</strong>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>미납 금액:</span>
+                  <strong style={{ color: 'var(--danger)' }}>{(member.totalAmount - member.paidAmount).toLocaleString()}원</strong>
+                </div>
               </div>
 
               <div className={styles.duesList}>
