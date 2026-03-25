@@ -7,6 +7,8 @@ import { UserPlus, CheckCircle, Circle, Trash2 } from 'lucide-react';
 export default function MembersPage() {
   const [members, setMembers] = useState([]);
   const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberDue, setNewMemberDue] = useState('');
+  const [newMemberPaid, setNewMemberPaid] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // New Due State for a specific member
@@ -35,15 +37,29 @@ export default function MembersPage() {
     if (!newMemberName.trim()) return;
 
     try {
-      await fetch('/api/members', {
+      const res = await fetch('/api/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newMemberName })
+        body: JSON.stringify({ 
+          name: newMemberName,
+          dueAmount: newMemberDue ? Number(newMemberDue) : null,
+          isPaid: newMemberPaid 
+        })
       });
+      
+      if (!res.ok) {
+        const errData = await res.json();
+        alert('멤버 추가 실패: ' + (errData.error || '알 수 없는 오류'));
+        return;
+      }
+      
       setNewMemberName('');
+      setNewMemberDue('');
+      setNewMemberPaid(false);
       fetchMembers();
     } catch (err) {
       console.error(err);
+      alert('네트워크 오류가 발생했습니다.');
     }
   };
 
@@ -92,16 +108,35 @@ export default function MembersPage() {
         <div className="glass-card">
           <h3>신규 멤버 추가</h3>
           <form onSubmit={handleAddMember} className={styles.addForm}>
-            <input 
-              type="text" 
-              placeholder="멤버 이름" 
-              value={newMemberName}
-              onChange={(e) => setNewMemberName(e.target.value)}
-              className={styles.input}
-              required
-            />
-            <button type="submit" className="btn btn-primary">
-              <UserPlus size={18} /> 추가하기
+            <div className={styles.formRow}>
+              <input 
+                type="text" 
+                placeholder="멤버 이름 (필수)" 
+                value={newMemberName}
+                onChange={(e) => setNewMemberName(e.target.value)}
+                className={styles.input}
+                required
+              />
+              <input 
+                type="number" 
+                placeholder="초기 가입비/회비 청구액 (선택)" 
+                value={newMemberDue}
+                onChange={(e) => setNewMemberDue(e.target.value)}
+                className={styles.input}
+              />
+            </div>
+            {newMemberDue && (
+              <label className={styles.togglePaid}>
+                <input 
+                  type="checkbox" 
+                  checked={newMemberPaid}
+                  onChange={(e) => setNewMemberPaid(e.target.checked)}
+                />
+                가입과 동시에 입금 완료 처리하기
+              </label>
+            )}
+            <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
+              <UserPlus size={18} /> 등록하기
             </button>
           </form>
         </div>
