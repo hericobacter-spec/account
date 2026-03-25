@@ -10,6 +10,7 @@ export async function GET() {
     `;
     const formatted = expenses.map(e => ({
       ...e,
+      date: new Date(e.expense_date).toISOString().split('T')[0],
       expense_date: new Date(e.expense_date).toISOString().split('T')[0]
     }));
     return NextResponse.json(formatted);
@@ -20,15 +21,18 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const sql = getDb(); // Using the renamed imported function
-    const { amount, purpose, vendor, expense_date, receipt_image } = await request.json();
-    if (!amount || !purpose || !expense_date) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const { amount, purpose, vendor, items, date, expense_date, receipt_image } = await request.json();
+    
+    // Unified date handling: accept either 'date' (frontend) or 'expense_date' (API spec)
+    const finalDate = expense_date || date;
+    
+    if (!amount || !purpose || !finalDate) {
+      return NextResponse.json({ error: 'Missing required fields: amount, purpose, or date' }, { status: 400 });
     }
 
     const { rows } = await sql`
-      INSERT INTO expenses (amount, purpose, vendor, expense_date, receipt_image)
-      VALUES (${amount}, ${purpose}, ${vendor || ''}, ${expense_date}, ${receipt_image || null})
+      INSERT INTO expenses (amount, purpose, vendor, items, expense_date, receipt_image)
+      VALUES (${amount}, ${purpose}, ${vendor || ''}, ${items || null}, ${finalDate}, ${receipt_image || null})
       RETURNING id
     `;
 

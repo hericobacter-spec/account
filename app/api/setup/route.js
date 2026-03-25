@@ -28,6 +28,7 @@ export async function GET() {
         amount INTEGER NOT NULL,
         purpose VARCHAR(255) NOT NULL,
         vendor VARCHAR(255),
+        items TEXT,
         expense_date DATE NOT NULL,
         receipt_image TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -37,9 +38,10 @@ export async function GET() {
     // Auto-migration for existing tables
     try {
       await sql`ALTER TABLE expenses ADD COLUMN receipt_image TEXT`;
-    } catch (e) {
-      // Column probably already exists
-    }
+    } catch (e) {}
+    try {
+      await sql`ALTER TABLE expenses ADD COLUMN items TEXT`;
+    } catch (e) {}
 
     return NextResponse.json({ message: 'Database tables configured successfully.' });
   } catch (err) {
