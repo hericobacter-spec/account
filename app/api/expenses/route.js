@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { sql } from '@vercel/postgres';
 
 export const dynamic = 'force-dynamic';
 
-
 export async function GET() {
   try {
-    const expenses = db.prepare('SELECT * FROM expenses ORDER BY date DESC, created_at DESC').all();
-    return NextResponse.json(expenses);
+    const { rows: expenses } = await sql`
+      SELECT * FROM expenses ORDER BY expense_date DESC, created_at DESC
+    `;
+    const formatted = expenses.map(e => ({
+      ...e,
+      expense_date: new Date(e.expense_date).toISOString().split('T')[0]
+    }));
+    return NextResponse.json(formatted);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -15,17 +20,31 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { date, purpose, items, vendor, amount, receipt_image_url } = await request.json();
-    if (!date || !purpose || amount == null) {
+    const { amount, purpose, vendor, expense_date } = await request.json();
+    if (!amount || !purpose || !expense_date) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const info = db.prepare(`
-      INSERT INTO expenses (date, purpose, items, vendor, amount, receipt_image_url) 
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(date, purpose, items || null, vendor || null, amount, receipt_image_url || null);
+    const { rows } = await sql`
+      INSERT INTO expenses (amount, purpose, vendor, expense_date)
+      VALUES (${amount}, ${purpose}, ${vendor || ''}, ${expense_date})
+      RETURNING id
+    `;
 
-    return NextResponse.json({ id: info.lastInsertRowid }, { status: 201 });
+    return NextResponse.json({ id: rows[0].id }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+
+    await sql`DELETE FROM expenses WHERE id = ${id}`;
+    return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

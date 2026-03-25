@@ -1,44 +1,50 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
-import * as xlsx from 'xlsx';
+import { sql } from '@vercel/postgres';
+import * as XLSX from 'xlsx';
 
 export const dynamic = 'force-dynamic';
 
-
 export async function GET() {
   try {
-    const expenses = db.prepare('SELECT date, purpose, vendor, amount FROM expenses ORDER BY date ASC').all();
-    const members = db.prepare(`
-      SELECT m.name, SUM(d.amount) as total_dues, SUM(CASE WHEN d.is_paid = 1 THEN d.amount ELSE 0 END) as paid
-      FROM members m
-      LEFT JOIN dues d ON m.id = d.member_id
-      GROUP BY m.id
-    `).all();
+    const { rows: members } = await sql`SELECT * FROM members ORDER BY created_at ASC`;
+    const membersData = await Promise.all(members.map(async (m) => {
+      const { rows: dues } = await sql`SELECT * FROM dues WHERE member_id = ${m.id}`;
+      const totalAmount = dues.reduce((sum, d) => sum + d.amount, 0);
+      const paidAmount = dues.reduce((sum, d) => d.is_paid ? sum + d.amount : sum, 0);
+      const unpaidCount = dues.filter(d => !d.is_paid).length;
+      return {
+        '멤버명': m.name,
+        '청구된 총액': totalAmount,
+        '납입 완료 금액': paidAmount,
+        '미납 금액': totalAmount - paidAmount,
+        '미납 건수': unpaidCount
+      };
+    }));
 
-    // Create a new workbook
-    const workbook = xlsx.utils.book_new();
+    const wb = XLSX.utils.book_new();
+    const membersWs = XLSX.utils.json_to_sheet(membersData);
+    XLSX.utils.book_append_sheet(wb, membersWs, '멤버 입금 현황');
 
-    // Expenses Sheet
-    const expensesSheet = xlsx.utils.json_to_sheet(expenses);
-    xlsx.utils.book_append_sheet(workbook, expensesSheet, 'Expenses');
+    const { rows: expenses } = await sql`SELECT * FROM expenses ORDER BY expense_date DESC`;
+    const expensesData = expenses.map(e => ({
+      '사용 일자': new Date(e.expense_date).toISOString().split('T')[0],
+      '지출 목적': e.purpose,
+      '지출처': e.vendor || '',
+      '결제 금액': e.amount
+    }));
+    
+    if (expensesData.length > 0) {
+      const expensesWs = XLSX.utils.json_to_sheet(expensesData);
+      XLSX.utils.book_append_sheet(wb, expensesWs, '지출 내역');
+    }
 
-    // Members Status Sheet
-    const membersSheet = xlsx.utils.json_to_sheet(members.map(m => ({
-      'Member Name': m.name,
-      'Total Dues': m.total_dues || 0,
-      'Paid Amount': m.paid || 0,
-      'Unpaid Amount': (m.total_dues || 0) - (m.paid || 0)
-    })));
-    xlsx.utils.book_append_sheet(workbook, membersSheet, 'Members Status');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
-    // Generate buffer
-    const buf = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-
-    return new Response(buf, {
+    return new NextResponse(buf, {
       status: 200,
       headers: {
-        'Content-Disposition': 'attachment; filename="group_expenses_report.xlsx"',
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename="group_report.xlsx"'
       }
     });
   } catch (error) {
