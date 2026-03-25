@@ -35,15 +35,27 @@ export async function GET() {
       );
     `;
     
+    const results = [];
+    
     // Auto-migration for existing tables
     try {
       await sql`ALTER TABLE expenses ADD COLUMN receipt_image TEXT`;
-    } catch (e) {}
+      results.push('receipt_image added');
+    } catch (e) {
+      results.push('receipt_image skip: ' + e.message);
+    }
+    
     try {
       await sql`ALTER TABLE expenses ADD COLUMN items TEXT`;
-    } catch (e) {}
+      results.push('items added');
+    } catch (e) {
+      results.push('items skip: ' + e.message);
+    }
 
-    return NextResponse.json({ message: 'Database tables configured successfully.' });
+    return NextResponse.json({ 
+      message: 'Database tables configured successfully.',
+      details: results
+    });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
