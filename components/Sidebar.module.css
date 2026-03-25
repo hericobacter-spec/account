@@ -1,0 +1,106 @@
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: var(--surface-color);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem;
+  z-index: 50;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+}
+
+.iconWrapper {
+  font-size: 1.5rem;
+  background: var(--accent-light);
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+}
+
+.logo h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+}
+
+.nav ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.link:hover {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+}
+
+.active {
+  background-color: var(--accent-light);
+  color: var(--accent-primary);
+}
+
+.active:hover {
+  background-color: var(--accent-light);
+}
+
+.bottomActions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+}
+
+/* Global app layout applied with typical next.js pattern */
+:global(.app-container) {
+  display: flex;
+  min-height: 100vh;
+}
+
+:global(.main-content) {
+  flex: 1;
+  margin-left: 260px;
+  padding: 3rem;
+  max-width: 1200px;
+}
