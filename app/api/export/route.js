@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { sql } from '@vercel/postgres';
 import * as XLSX from 'xlsx';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const sql = getDb();
-    const members = await sql`SELECT * FROM members ORDER BY created_at ASC`;
+    const { rows: members } = await sql`SELECT * FROM members ORDER BY created_at ASC`;
     const membersData = await Promise.all(members.map(async (m) => {
-      const dues = await sql`SELECT * FROM dues WHERE member_id = ${m.id}`;
+      const { rows: dues } = await sql`SELECT * FROM dues WHERE member_id = ${m.id}`;
       const totalAmount = dues.reduce((sum, d) => sum + d.amount, 0);
       const paidAmount = dues.reduce((sum, d) => d.is_paid ? sum + d.amount : sum, 0);
       const unpaidCount = dues.filter(d => !d.is_paid).length;
@@ -26,7 +25,7 @@ export async function GET() {
     const membersWs = XLSX.utils.json_to_sheet(membersData);
     XLSX.utils.book_append_sheet(wb, membersWs, '멤버 입금 현황');
 
-    const expenses = await sql`SELECT * FROM expenses ORDER BY expense_date DESC`;
+    const { rows: expenses } = await sql`SELECT * FROM expenses ORDER BY expense_date DESC`;
     const expensesData = expenses.map(e => ({
       '사용 일자': new Date(e.expense_date).toISOString().split('T')[0],
       '지출 목적': e.purpose,

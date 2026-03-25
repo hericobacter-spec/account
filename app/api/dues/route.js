@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { sql } from '@vercel/postgres';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
-    const sql = getDb();
     const { member_id, amount, due_date } = await request.json();
     if (!member_id || !amount || !due_date) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -24,7 +23,6 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    const sql = getDb();
     const { id, is_paid } = await request.json();
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 

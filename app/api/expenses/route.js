@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { sql } from '@vercel/postgres';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const sql = getDb();
-    const expenses = await sql`
+    const { rows: expenses } = await sql`
       SELECT * FROM expenses ORDER BY expense_date DESC, created_at DESC
     `;
     const formatted = expenses.map(e => ({
@@ -21,13 +20,12 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const sql = getDb();
     const { amount, purpose, vendor, expense_date } = await request.json();
     if (!amount || !purpose || !expense_date) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const rows = await sql`
+    const { rows } = await sql`
       INSERT INTO expenses (amount, purpose, vendor, expense_date)
       VALUES (${amount}, ${purpose}, ${vendor || ''}, ${expense_date})
       RETURNING id
@@ -41,7 +39,6 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    const sql = getDb();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
