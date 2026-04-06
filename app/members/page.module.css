@@ -1,14 +1,14 @@
 .membersPage {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 2rem;
 }
 
 .header h2 {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.025em;
+  margin-bottom: 0.375rem;
+  letter-spacing: -0.03em;
 }
 
 .topSection {
@@ -18,18 +18,20 @@
 .topSection h3 {
   margin-bottom: 1rem;
   font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
 }
 
 .addForm {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
 }
 
 .formRow {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
 }
 
@@ -41,13 +43,18 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   background: var(--bg-color);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   width: fit-content;
+  transition: background-color 0.2s;
+}
+
+.togglePaid:hover {
+  background: var(--border-color);
 }
 
 @media (max-width: 1024px) {
@@ -62,18 +69,16 @@
 
 .memberGrid {
   flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
 }
 
 .listSection h3 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
-}
-
-.memberGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
 }
 
 .memberCard {
@@ -89,17 +94,19 @@
 }
 
 .memberHeader h4 {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .statusBadge {
   background-color: var(--success-light);
   color: var(--success);
-  padding: 0.25rem 0.75rem;
+  padding: 0.1875rem 0.625rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .statusBadge[data-unpaid="true"] {
@@ -110,14 +117,14 @@
 .deleteMemberBtn {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 0.25rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .deleteMemberBtn:hover {
@@ -128,8 +135,8 @@
 .duesSummary {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
@@ -146,46 +153,57 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .emptyDues {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
   text-align: center;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
 }
 
 .dueItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
+  padding: 0.625rem 0.75rem;
   background-color: var(--bg-color);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.dueItem:hover {
+  border-color: var(--border-color);
 }
 
 .dueInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
   font-weight: 500;
+  font-size: 0.9375rem;
+}
+
+.dueInfo small {
+  font-weight: 400;
 }
 
 .toggleBtn {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s;
+  border-radius: var(--radius-xs);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  letter-spacing: 0.02em;
 }
 
 .unpaid {
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 
 .unpaid:hover {
@@ -201,14 +219,21 @@
 .addDueBtn {
   width: 100%;
   border-style: dashed;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+}
+
+.addDueBtn:hover {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
 }
 
 .dueForm {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.625rem;
   background-color: var(--bg-color);
-  padding: 1rem;
+  padding: 0.875rem;
   border-radius: var(--radius-sm);
 }
 
