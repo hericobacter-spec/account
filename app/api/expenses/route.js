@@ -38,11 +38,14 @@ export async function GET() {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { amount, purpose, vendor, items, date, expense_date, receipt_image } = body;
+    const { amount, purpose, vendor, items, date, expense_date, receipt_image, receipt_images } = body;
     
-    console.log('Inserting expense:', { amount, purpose, vendor, date: expense_date || date });
-
     const finalDate = expense_date || date;
+    const imagePayload = Array.isArray(receipt_images)
+      ? JSON.stringify(receipt_images)
+      : receipt_image || null;
+
+    console.log('Inserting expense:', { amount, purpose, vendor, date: finalDate, imageCount: Array.isArray(receipt_images) ? receipt_images.length : receipt_image ? 1 : 0 });
     
     if (!amount || !purpose || !finalDate) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -50,7 +53,7 @@ export async function POST(request) {
 
     const result = await sql`
       INSERT INTO expenses (amount, purpose, vendor, items, expense_date, receipt_image)
-      VALUES (${Number(amount)}, ${purpose}, ${vendor || ''}, ${items || null}, ${finalDate}, ${receipt_image || null})
+      VALUES (${Number(amount)}, ${purpose}, ${vendor || ''}, ${items || null}, ${finalDate}, ${imagePayload})
       RETURNING id, amount, purpose
     `;
 

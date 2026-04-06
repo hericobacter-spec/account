@@ -2,7 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
-import { Camera, Plus, FileText, Upload, RefreshCw, XCircle, X, Image as ImageIcon } from 'lucide-react';
+import { Camera, Plus, FileText, Upload, RefreshCw, XCircle, X, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+
+function getReceiptImages(expense) {
+  if (Array.isArray(expense.receipt_images)) return expense.receipt_images;
+  if (expense.receipt_image) {
+    try {
+      const parsed = JSON.parse(expense.receipt_image);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+    return [expense.receipt_image];
+  }
+  return [];
+}
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState([]);
@@ -15,7 +27,7 @@ export default function ExpensesPage() {
     vendor: '',
     items: '',
     amount: '',
-    receipt_image: null
+    receipt_images: []
   });
 
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -84,9 +96,8 @@ export default function ExpensesPage() {
 
     setOcrLoading(true);
     
-    // Save image locally right away using client-side compression
     const base64 = await compressImage(file);
-    setFormData(prev => ({ ...prev, receipt_image: base64 }));
+    setFormData(prev => ({ ...prev, receipt_images: [...prev.receipt_images, base64] }));
 
     const formDataPayload = new FormData();
     formDataPayload.append('image', file);
@@ -107,7 +118,6 @@ export default function ExpensesPage() {
           ...prev,
           amount: data.amount ? String(data.amount) : prev.amount,
           vendor: data.vendor ? data.vendor : prev.vendor,
-          receipt_image: base64
         }));
         alert('영수증 인식이 완료되었습니다. 금액과 사용처를 확인해주세요.');
       } else {
@@ -126,9 +136,8 @@ export default function ExpensesPage() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Save image locally without OCR processing
     const base64 = await compressImage(file);
-    setFormData(prev => ({ ...prev, receipt_image: base64 }));
+    setFormData(prev => ({ ...prev, receipt_images: [...prev.receipt_images, base64] }));
     
     if (basicInputRef.current) basicInputRef.current.value = '';
   };
@@ -158,7 +167,7 @@ export default function ExpensesPage() {
         vendor: '',
         items: '',
         amount: '',
-        receipt_image: null
+        receipt_images: []
       });
       setShowForm(false);
       
@@ -233,7 +242,7 @@ export default function ExpensesPage() {
               style={{ display: 'none' }}
             />
 
-            {!formData.receipt_image ? (
+            {!formData.receipt_images.length > 0 ? (
               <div className={styles.uploadOptions}>
                 <div 
                   className={`${styles.uploadCard} ${ocrLoading ? styles.disabled : ''}`} 
@@ -260,12 +269,31 @@ export default function ExpensesPage() {
             ) : (
               <div className={styles.previewContainer}>
                 <div style={{marginBottom: '0.75rem', fontSize:'0.875rem', color: 'var(--success)', fontWeight: '600'}}>
-                  ✓ 첨부가 완료되었습니다. (하단에 상세 내역을 입력하세요)
+                  ✓ {formData.receipt_images.length}장 첨부됨 — 추가 업로드 가능
                 </div>
-                <img src={formData.receipt_image} alt="Receipt Preview" className={styles.previewImage} />
-                <button type="button" className={styles.removeImageBtn} onClick={() => setFormData(prev => ({...prev, receipt_image: null}))}>
-                  <X size={14} />
-                </button>
+                <div className={styles.previewGrid}>
+                  {formData.receipt_images.map((img, idx) => (
+                    <div key={idx} className={styles.previewItem}>
+                      <img src={img} alt={`Receipt ${idx + 1}`} className={styles.previewImage} />
+                      <button type="button" className={styles.removeImageBtn} onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          receipt_images: prev.receipt_images.filter((_, i) => i !== idx)
+                        }));
+                      }}>
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className={styles.previewActions}>
+                  <button type="button" className="btn btn-secondary" onClick={() => ocrInputRef.current?.click()}>
+                    <Camera size={16} /> OCR 추가
+                  </button>
+                  <button type="button" className="btn btn-secondary" onClick={() => basicInputRef.current?.click()}>
+                    <Upload size={16} /> 일반 추가
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -346,12 +374,12 @@ export default function ExpensesPage() {
                       </div>
                     </td>
                     <td className={styles.centerCol}>
-                      {expense.receipt_image && (
+                      {getReceiptImages(expense).length > 0 && (
                         <button 
                           className={styles.viewReceiptBtn}
-                          onClick={() => setShowModal(expense.receipt_image)}
+                          onClick={() => setShowModal({ images: getReceiptImages(expense), index: 0 })}
                         >
-                          <ImageIcon size={14} /> 보기
+                          <ImageIcon size={14} /> {getReceiptImages(expense).length}장
                         </button>
                       )}
                     </td>
@@ -382,9 +410,28 @@ export default function ExpensesPage() {
           <button className={styles.closeModalBtn} onClick={() => setShowModal(null)}>
             <X size={24} />
           </button>
+          {showModal.images.length > 1 && showModal.index > 0 && (
+            <button className={`${styles.navBtn} ${styles.navPrev}`} onClick={(e) => {
+              e.stopPropagation();
+              setShowModal(prev => ({ ...prev, index: prev.index - 1 }));
+            }}>
+              <ChevronLeft size={28} />
+            </button>
+          )}
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <img src={showModal} alt="Receipt Full" />
+            <img src={showModal.images[showModal.index]} alt={`Receipt ${showModal.index + 1}`} />
+            {showModal.images.length > 1 && (
+              <div className={styles.modalCounter}>{showModal.index + 1} / {showModal.images.length}</div>
+            )}
           </div>
+          {showModal.images.length > 1 && showModal.index < showModal.images.length - 1 && (
+            <button className={`${styles.navBtn} ${styles.navNext}`} onClick={(e) => {
+              e.stopPropagation();
+              setShowModal(prev => ({ ...prev, index: prev.index + 1 }));
+            }}>
+              <ChevronRight size={28} />
+            </button>
+          )}
         </div>
       )}
     </div>
